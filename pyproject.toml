@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "cocotb-introduction"
+version = "0.1.0"
+description = "Contains a few examples on cocotb. This project should be paired with the cocotb-introduction talk."
+authors = ["Andrew Andre Powell <andrewandrepowell2@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
