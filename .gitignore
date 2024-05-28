@@ -188,4 +188,7 @@ pyrightconfig.json
 .history
 .ionide
 
+# Ignore the ghdl artifacts
+sim_build
+
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
