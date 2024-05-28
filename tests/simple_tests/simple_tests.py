@@ -114,7 +114,7 @@ async def test_bare_bones(top):
         for expected in rData:
             while True:
                 await triggers.RisingEdge(top.clk)
-                if top.rst.value.integer == 0 and top.rValid.value.binstr == "1":
+                if top.rst.value.integer == 0 and top.rValid.value.integer == 1:
                     actual = top.rData.value.integer
                     cocotb.log.info(f"Read r={actual} from the adder.")
                     assert expected == actual, f"The expected value of {expected} does not equal the actual value {actual}!"
@@ -186,7 +186,7 @@ async def test_bare_bones_commentless(top):
         for expected in rData:
             while True:
                 await triggers.RisingEdge(top.clk)
-                if top.rst.value.integer == 0 and top.rValid.value.binstr == "1":
+                if top.rst.value.integer == 0 and top.rValid.value.integer == 1:
                     actual = top.rData.value.integer
                     cocotb.log.info(f"Read r={actual} from the adder.")
                     assert expected == actual, f"The expected value of {expected} does not equal the actual value {actual}!"
