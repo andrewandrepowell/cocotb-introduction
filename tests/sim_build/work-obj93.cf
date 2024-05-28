@@ -1,0 +1,4 @@
+v 4
+file / "/mnt/c/Users/andre/source/repos/cocotb-introduction/tests/../hdl/simple_adder.vhd" "1704b59a08af676da48cb56b224063820893619d" "20240528031821.677":
+  entity simple_adder at 1( 0) + 0 on 11;
+  architecture rtl of simple_adder at 18( 474) + 0 on 12;
