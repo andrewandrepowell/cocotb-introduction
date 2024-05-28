@@ -13,4 +13,3 @@
 - `apt install make` cocotb is started with make files.
 - `apt install ghdl` ghdl is the simulator.
 - `apt install gtkwave` gtkwave is the tool for viewing waveforms.
-- `apt install x11-xserver-utils` tools for xhost. xserver needs to run on windows to open up gtkwave gui from wsl
