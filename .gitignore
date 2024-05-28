@@ -190,5 +190,6 @@ pyrightconfig.json
 
 # Ignore the ghdl artifacts
 sim_build
+*.vcd
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode

@@ -1,9 +1,10 @@
 # Makefile
 HDL_DIR=$(PWD)/../../hdl
 
-# defaults
+# Configs
 SIM ?= ghdl
 TOPLEVEL_LANG ?= vhdl
+SIM_ARGS ?= --vcd=waveform.vcd
 
 VHDL_SOURCES += $(HDL_DIR)/simple_adder.vhd
 
