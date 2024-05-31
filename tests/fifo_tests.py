@@ -6,10 +6,23 @@ import cocotb_introduction.fifo as fifo
 from cocotb_introduction import reset, Queue
 import typing
 import random
+import dataclasses
 
 
-def prepare_testbench(top: handle.SimHandleBase) -> typing.Tuple[fifo.FifoWriteDriver, fifo.FifoReadDriver]:
+@dataclasses.dataclass(frozen=True)
+class Testbench:
+    """Contains all the essentials of the fifo testbench."""
+    width: int
+    mask: int
+    fifo_wr: fifo.FifoWriteDriver
+    fifo_rd: fifo.FifoReadDriver
+
+
+def prepare_testbench(top: handle.SimHandleBase) -> Testbench:
     """Quickly spin up a test bench to verify the fifo."""
+
+    width = top.WIDTH.value
+    mask = (1 << width) - 1
 
     fifo_wr = fifo.FifoWriteDriver(
         clk=top.clk,
@@ -30,21 +43,20 @@ def prepare_testbench(top: handle.SimHandleBase) -> typing.Tuple[fifo.FifoWriteD
     cocotb.start_soon(reset(top.clk, top.rst))
     cocotb.start_soon(clock.Clock(top.clk, 10, "ns").start())
 
-    return (fifo_wr, fifo_rd)
+    return Testbench(width=width, mask=mask, fifo_wr=fifo_wr, fifo_rd=fifo_rd)
 
 
 @cocotb.test()
 async def test_basic(top: handle.SimHandleBase):
     """Simple test to quickly verify the fifo."""
 
-    fifo_wr, fifo_rd = prepare_testbench(top)
-
-    data = list(range(64))
+    tb = prepare_testbench(top)
+    data = [value & tb.mask for value in range(64)]
 
     rd_msgs: typing.List[fifo.FifoReadMessage] = []
     for value in data:
-        fifo_wr.write(value)
-        rd_msgs.append(fifo_rd.read())
+        tb.fifo_wr.write(value)
+        rd_msgs.append(tb.fifo_rd.read())
 
     for exp, msg in zip(data, rd_msgs):
         act = await msg.processed_wait()
@@ -56,12 +68,11 @@ async def test_basic(top: handle.SimHandleBase):
 async def test_backpressure(top: handle.SimHandleBase):
     """Fill up fifo. Wait a while. And then empty it, while reading data."""
 
-    fifo_wr, fifo_rd = prepare_testbench(top)
-
-    data = list(range(64))
+    tb = prepare_testbench(top)
+    data = [value & tb.mask for value in range(64)]
 
     for value in data:
-        fifo_wr.write(value)
+        tb.fifo_wr.write(value)
 
     while top.full.value.binstr != '1':
         await triggers.Edge(top.full)
@@ -70,7 +81,7 @@ async def test_backpressure(top: handle.SimHandleBase):
 
     rd_msgs: typing.List[fifo.FifoReadMessage] = []
     for _ in data:
-        rd_msgs.append(fifo_rd.read())
+        rd_msgs.append(tb.fifo_rd.read())
 
     for exp, rd_msg in zip(data, rd_msgs):
         act = await rd_msg.processed_wait()
@@ -80,12 +91,15 @@ async def test_backpressure(top: handle.SimHandleBase):
 
 @cocotb.test()
 async def test_random(top: handle.SimHandleBase):
-    """ """
+    """Write data into fifo at random intervals,
+    while read data from fifo at random intervals.
 
-    fifo_wr, fifo_rd = prepare_testbench(top)
+    The rate at which data is written to faster than
+    the rate which data is read."""
+
+    tb = prepare_testbench(top)
     rd_queue = Queue[fifo.FifoReadMessage]()
-
-    data = list(range(256))
+    data = [value & tb.mask for value in range(256)]
 
     async def random_wait(max_time: float):
         wait = random.randint(-50, max_time)
@@ -94,13 +108,13 @@ async def test_random(top: handle.SimHandleBase):
 
     async def write_data():
         for value in data:
-            msg = fifo_wr.write(value)
+            msg = tb.fifo_wr.write(value)
             await random_wait(50)
             await msg.started_wait()
 
     async def read_data():
         for _ in data:
-            msg = fifo_rd.read()
+            msg = tb.fifo_rd.read()
             rd_queue.push(msg)
             await random_wait(70)
             await msg.started_wait()

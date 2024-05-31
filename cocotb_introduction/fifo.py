@@ -156,13 +156,14 @@ class FifoWriteDriver:
             nonlocal msg, cnt
             while True:
                 await triggers.RisingEdge(clk)
-                await triggers.NullTrigger()
+                await triggers.NullTrigger() # Reschedules the task; need to make sure drive_data always occurs first
                 if rst.value.binstr != "0":
                     cnt = 0
                 else:
                     if almost_full.value.integer == 0:
                         cnt = 0
                         cnt_evt.set()
+                        await triggers.RisingEdge(almost_full)
                     elif msg is not None and cnt != cnt_end:
                         cnt += 1
                         cnt_evt.set()
@@ -191,8 +192,11 @@ class FifoWriteDriver:
                         data_in.value = msg.data
                         msg._start()
                         msg_evt.set()
-                    if msg is None and self._messages.empty:
-                        await self._messages.event
+                    if msg is not None and almost_full.value.integer == 1 and cnt == cnt_end:
+                        cnt_evt.clear()
+                        await triggers.First(triggers.Edge(rst), triggers.Edge(almost_full), cnt_evt.wait())
+                    elif msg is None and self._messages.empty:
+                        await triggers.First(triggers.Edge(rst), self._messages.event)
 
         cocotb.start_soon(drive_valid())
         cocotb.start_soon(drive_data())
@@ -243,8 +247,10 @@ class FifoReadDriver:
                             msg = self._messages.pop()
                             msg._start()
                             msg_evt.set()
-                        if msg is None and self._messages.empty:
-                            await self._messages.event
+                        if msg is not None and empty.value.integer == 1:
+                            await triggers.First(triggers.Edge(rst), triggers.Edge(empty))
+                        elif msg is None and self._messages.empty:
+                            await triggers.First(triggers.Edge(rst), self._messages.event)
 
         cocotb.start_soon(drive_ack())
         cocotb.start_soon(drive_data())
