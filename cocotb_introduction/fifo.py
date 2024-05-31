@@ -1,3 +1,21 @@
+"""
+Contains the FifoWriteDriver and the FifoReadDriver implementations.
+
+The drivers follow a message-passing, object-oriented approach.
+The idea is that the driver is responsible for a single interface,
+directly interacting with the simulation handles of the interface and
+carrying out all the necessary operations to fulfill the interface's protocol.
+
+Separate tasks send messages to the driver in order to indirectly access the interface.
+The message itself acts like communication medium between the separate task and the driver,
+where the driver can even send data back to the separate task or receive more data, depending on the interface.
+The driver is also responsible for dealing with the possibility of receiving multiple messages.
+In this sense, the driver acts like server, providing clients a safe, simpler access to a resource, the interface.
+
+For example, calling the read method on a FifoReadDriver sends a message to the FifoReadDriver, requesting data.
+The FifoReadDriver will receive the message, issue
+
+"""
 import cocotb.triggers as triggers
 import cocotb
 import typing
@@ -159,6 +177,7 @@ class FifoWriteDriver:
                 await triggers.NullTrigger() # Reschedules the task; need to make sure drive_data always occurs first
                 if rst.value.binstr != "0":
                     cnt = 0
+                    await triggers.FallingEdge(rst)
                 else:
                     if almost_full.value.integer == 0:
                         cnt = 0
@@ -182,6 +201,7 @@ class FifoWriteDriver:
                 await triggers.RisingEdge(clk)
                 if rst.value.binstr != "0":
                     assert msg is None, "Reset occurred during outstanding message"
+                    await triggers.FallingEdge(rst)
                 else:
                     if (almost_full.value.integer == 0 or cnt != cnt_end) and msg is not None:
                         msg._process()
@@ -238,6 +258,7 @@ class FifoReadDriver:
                     await triggers.RisingEdge(clk)
                     if rst.value.binstr != "0":
                         assert msg is None, "Reset occurred during outstanding message"
+                        await triggers.FallingEdge(rst)
                     else:
                         if empty.value.integer == 0 and msg is not None:
                             msg._process(data_out.value.integer)

@@ -19,7 +19,7 @@ class Testbench:
 
 
 def prepare_testbench(top: handle.SimHandleBase) -> Testbench:
-    """Quickly spin up a test bench to verify the fifo."""
+    """Quickly spin up a testbench to verify the fifo."""
 
     width = top.WIDTH.value
     mask = (1 << width) - 1

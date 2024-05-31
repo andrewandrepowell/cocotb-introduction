@@ -11,8 +11,8 @@ def simulate_command(module_name: str, top_level: str, work_dir: typing.Optional
     return (f"MODULE={module_name} " +
             f"TOPLEVEL={top_level} " +
             f"SIM_BUILD={work_dir} " +
-            f"SIM_ARGS=--vcd={work_dir}/waveform.vcd " +
-            ("" if sim_args is None else f"SIM_ARGS={sim_args} ") +
+            f"SIM_ARGS=\"--vcd={work_dir}/waveform.vcd " +
+            ("" if sim_args is None else f"{sim_args} ") + "\" " +
             f"COCOTB_RESULTS_FILE={work_dir}/results.xml " +
             f"make")
 
@@ -28,10 +28,21 @@ def simple_tests(c: invoke.Context) -> None:
 
 
 @invoke.task
+def adder_tests(c: invoke.Context) -> None:
+    widths = (2, 4, 8)
+    for width in widths:
+        c.run(simulate_command(
+            module_name="adder_tests",
+            top_level="simple_adder",
+            work_dir=f"adder_tests_width_{width}",
+            sim_args=f"-gWIDTH={width}"))
+
+
+@invoke.task
 def fifo_tests(c: invoke.Context) -> None:
     widths = (4, 8,)
-    depths = (32, 64,)
-    af_depths = (16, 32,)
+    depths = (2, 32, 64,)
+    af_depths = (2, 16, 32,)
     for width, depth, af_depth in itertools.product(widths, depths, af_depths):
         if af_depth > depth:
             continue
@@ -39,7 +50,7 @@ def fifo_tests(c: invoke.Context) -> None:
             module_name="fifo_tests",
             top_level="fifo",
             work_dir=f"fifo_tests_width_{width}_depth_{depth}_afdepth_{af_depth}",
-            sim_args=f"\"-gWIDTH={width} -gDEPTH={depth} -gALMOST_FULL_DEPTH={af_depth}\""))
+            sim_args=f"-gWIDTH={width} -gDEPTH={depth} -gALMOST_FULL_DEPTH={af_depth}"))
 
 
 @invoke.task(simple_tests, fifo_tests, default=True)
@@ -51,6 +62,7 @@ ns = invoke.Collection()
 tests_ns = invoke.Collection("test")
 tests_ns.add_task(simple_tests, "simple")
 tests_ns.add_task(fifo_tests, "fifo")
+tests_ns.add_task(adder_tests, "adder")
 ns.add_collection(tests_ns)
 ns.add_task(run)
 ns.add_task(clean)
