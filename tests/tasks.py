@@ -32,7 +32,7 @@ def run(c: invoke.Context) -> None:
 
 
 ns = invoke.Collection()
-tests_ns = invoke.Collection("tests")
+tests_ns = invoke.Collection("test")
 tests_ns.add_task(simple_tests, "simple")
 tests_ns.add_task(fifo_tests, "fifo")
 ns.add_collection(tests_ns)

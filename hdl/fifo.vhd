@@ -3,11 +3,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
--- register based design. only intended for small sizes.
 entity fifo is
     generic (
         DEPTH : natural range 2 to integer'high := 16; -- depth of fifo
-        ALMOST_FULL_DEPTH : natural range 2 to DEPTH := DEPTH; -- threshold indicating fifo is nearly full
+        ALMOST_FULL_DEPTH : natural range 2 to DEPTH := 10; -- threshold indicating fifo is nearly full
         WIDTH : natural := 32); -- data width of fifo
     port (
         clk : in std_logic; -- clock
@@ -77,7 +76,7 @@ begin
                 end if;
                 if valid_data and not ack_data and n_af then
                     almost_full <= '1';
-                elsif not valid_data and ack_data and i_f then
+                elsif not valid_data and ack_data and i_af then
                     almost_full <= '0';
                 end if;
             end if;
