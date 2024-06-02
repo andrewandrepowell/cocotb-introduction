@@ -19,6 +19,7 @@ Make sure all the dependencies are installed.
 > cd cocotb-introduction
 > poetry shell
 > poetry install
+<install output ommitted>
 > cd tests
 > inv --list
 Available tasks:

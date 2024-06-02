@@ -1,22 +1,72 @@
 import invoke
+import invoke.exceptions as exceptions
 import typing
 import itertools
+import sys
+import pathlib
+import bs4
 
 
-def simulate_command(module_name: str, top_level: str, work_dir: typing.Optional[str] = None, sim_args: typing.Optional[str] = None) -> str:
-    """Runs the specified cocotb test with make."""
+class SimulationFailure(BaseException):
+    """Represents a simulation failure"""
+    pass
+
+
+def run_simulation(c: invoke.Context, module_name: str, top_level: str, work_dir: typing.Optional[str] = None, sim_args: typing.Optional[str] = None) -> None:
+    """Creates the command for the specified cocotb test with make."""
+
+    # Determine work directory.
     if work_dir is None:
         work_dir = f"{module_name}.work"
     else:
         work_dir = f"{work_dir}.work"
-    return (f"MODULE={module_name} " +
-            f"TOPLEVEL={top_level} " +
-            f"SIM_BUILD={work_dir} " +
-            f"WORK_DIR={work_dir} " +
-            f"SIM_ARGS=\"--vcd={work_dir}/waveform.vcd " +
-            ("" if sim_args is None else f"{sim_args} ") + "\" " +
-            f"COCOTB_RESULTS_FILE={work_dir}/results.xml " +
-            f"make")
+
+    # Create the paths
+    work_path = pathlib.Path(work_dir)
+    if not work_path.exists():
+        work_path.mkdir()
+    waveform_path = work_path / "waveform.vcd"
+    results_path = work_path / "results.xml"
+    error_path = work_path / "error.log"
+
+    # Create the simulation command and run the test.
+    command = (f"MODULE={module_name} " +
+        f"TOPLEVEL={top_level} " +
+        f"SIM_BUILD={work_path.as_posix()} " +
+        f"WORK_DIR={work_path.as_posix()} " +
+        f"SIM_ARGS=\"--vcd={waveform_path.as_posix()} " +
+        ("" if sim_args is None else f"{sim_args} ") + "\" " +
+        f"COCOTB_RESULTS_FILE={results_path.as_posix()} " +
+        f"make " +
+        f"2>{error_path.as_posix()}")
+
+    # Run command. Catch any errors and dump the logs.
+    try:
+        result = c.run(command)
+
+        # Check error code.
+        # This really shouldn't happen since the run
+        # should throw a Failure upon failures.
+        if result.return_code != 0:
+            raise SimulationFailure()
+
+        # Check to see if resutls xml exists.
+        if not (results_path.exists() and results_path.is_file()):
+            raise SimulationFailure()
+
+        # Check to see if the results file has any failures in it.
+        with open(results_path, "r") as file:
+            raw_results = file.read()
+        bs_results = bs4.BeautifulSoup(raw_results, "xml")
+        failures = bs_results.find_all("failure")
+        if len(failures) > 0:
+            raise SimulationFailure()
+
+    except (exceptions.Failure, SimulationFailure):
+        # Dump the error log if failure.
+        print(f"TEST FAILURE DETECTED! Dumping error log as well...", file=sys.stderr)
+        c.run(f"cat {error_path.as_posix()} >&2")
+        raise
 
 
 @invoke.task
@@ -29,7 +79,7 @@ def clean(c: invoke.Context) -> None:
 def simple_tests(c: invoke.Context) -> None:
     """Runs a simple test intended for tutorial purposes.
     See the cocotb presentation and the test itself for more information."""
-    c.run(simulate_command("simple_tests", "simple_adder"))
+    run_simulation(c, "simple_tests", "simple_adder")
 
 
 @invoke.task
@@ -37,11 +87,12 @@ def adder_tests(c: invoke.Context) -> None:
     """Verifies the adder."""
     widths = (2, 4, 8)
     for width in widths:
-        c.run(simulate_command(
+        run_simulation(
+            c=c,
             module_name="adder_tests",
             top_level="simple_adder",
             work_dir=f"adder_tests_width_{width}",
-            sim_args=f"-gWIDTH={width}"))
+            sim_args=f"-gWIDTH={width}")
 
 
 @invoke.task
@@ -49,11 +100,12 @@ def back_adder_tests(c: invoke.Context) -> None:
     """Verifies the adder with back pressure."""
     widths = (16, 32,)
     for width in widths:
-        c.run(simulate_command(
+        run_simulation(
+            c=c,
             module_name="back_adder_tests",
             top_level="back_adder",
             work_dir=f"back_adder_tests_width_{width}",
-            sim_args=f"-gWIDTH={width}"))
+            sim_args=f"-gWIDTH={width}")
 
 
 @invoke.task
@@ -65,32 +117,33 @@ def fifo_tests(c: invoke.Context) -> None:
     for width, depth, af_depth in itertools.product(widths, depths, af_depths):
         if af_depth > depth:
             continue
-        c.run(simulate_command(
+        run_simulation(
+            c=c,
             module_name="fifo_tests",
             top_level="fifo",
             work_dir=f"fifo_tests_width_{width}_depth_{depth}_afdepth_{af_depth}",
-            sim_args=f"-gWIDTH={width} -gDEPTH={depth} -gALMOST_FULL_DEPTH={af_depth}"))
+            sim_args=f"-gWIDTH={width} -gDEPTH={depth} -gALMOST_FULL_DEPTH={af_depth}")
 
 
 @invoke.task
 def delta_example(c: invoke.Context) -> None:
     """The only purpose of this test is to demonstrate how simulator works.
     See the cocotb presentation and the test itself for more information."""
-    c.run(simulate_command("delta_example", "delta_example"))
+    run_simulation(c, "delta_example", "delta_example")
 
 
 @invoke.task
 def delta_cocotb_example(c: invoke.Context) -> None:
     """The only purpose of this test is to demonstrate how simulator works with cocotb.
     See the cocotb presentation and the test itself for more information."""
-    c.run(simulate_command("delta_cocotb_example", "delta_cocotb_example"))
+    run_simulation(c, "delta_cocotb_example", "delta_cocotb_example")
 
 
 @invoke.task
 def simulation_handle_example(c: invoke.Context) -> None:
     """Demonstrates how cocotb's simulation handles work.
     See the cocotb presentation and the test itself for more information."""
-    c.run(simulate_command("simulation_handle_example", "simulation_handle_example"))
+    run_simulation(c, "simulation_handle_example", "simulation_handle_example")
 
 
 @invoke.task(
