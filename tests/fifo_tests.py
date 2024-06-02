@@ -14,16 +14,8 @@ import cocotb_introduction.queue as queue
 import cocotb_coverage.coverage as coverage
 import typing
 import random
-import enum
 import os
 import pathlib
-
-
-class CoverageStates(enum.Enum):
-    """Extra coverage states to represent a group of values in a cover point."""
-
-    MID_VALUE = enum.auto()
-    """Represents every value apart from the lowest and highest."""
 
 
 class Testbench:
@@ -52,14 +44,11 @@ class Testbench:
             data_out=top.data_out)
 
 
-        def coverage_rel_data(actual: int, bin: typing.Union[int, CoverageStates]) -> bool:
+        def coverage_rel_data(actual: int, bin: typing.Union[int, range]) -> bool:
             """Defines the rel function used to perform the determination on whether or
             not the actual data is in the corresponding bin."""
-            if isinstance(bin, CoverageStates):
-                if bin == CoverageStates.MID_VALUE:
-                    return actual > 0 and actual < self.mask
-                else:
-                    return False
+            if isinstance(bin, range):
+                return actual in bin
             else:
                 return actual == bin
 
@@ -67,7 +56,7 @@ class Testbench:
             coverage.CoverPoint(name="top.almost_full", xf=lambda almost_full, full, valid, data_in : almost_full, bins=[1, 0]),
             coverage.CoverPoint(name="top.full", xf=lambda almost_full, full, valid, data_in : full, bins=[1, 0]),
             coverage.CoverPoint(name="top.valid", xf=lambda almost_full, full, valid, data_in : valid, bins=[1, 0]),
-            coverage.CoverPoint(name="top.data_in", xf=lambda almost_full, full, valid, data_in : data_in, bins=[0, CoverageStates.MID_VALUE, self.mask],
+            coverage.CoverPoint(name="top.data_in", xf=lambda almost_full, full, valid, data_in : data_in, bins=[0, range(1, self.mask), self.mask],
                                 rel=coverage_rel_data),
             coverage.CoverCross(name="top.wr.cross_data", items=["top.valid", "top.data_in"], ign_bins=[(0, None)]),
             coverage.CoverCross(name="top.wr.cross_status", items=["top.almost_full", "top.full", "top.valid"], ign_bins=[(None, 1, 1), (0, 1, None)]))
@@ -83,7 +72,7 @@ class Testbench:
         @coverage.coverage_section(
             coverage.CoverPoint(name="top.empty", xf=lambda empty, ack, data_out : empty, bins=[1, 0]),
             coverage.CoverPoint(name="top.ack", xf=lambda empty, ack, data_out : ack, bins=[1, 0]),
-            coverage.CoverPoint(name="top.data_out", xf=lambda empty, ack, data_out : data_out, bins=[0, CoverageStates.MID_VALUE, self.mask],
+            coverage.CoverPoint(name="top.data_out", xf=lambda empty, ack, data_out : data_out, bins=[0, range(1, self.mask), self.mask],
                                 rel=coverage_rel_data),
             coverage.CoverCross(name="top.rd.cross_data", items=["top.ack", "top.data_out"], ign_bins=[(0, None)]),
             coverage.CoverCross(name="top.rd.cross_status", items=["top.empty", "top.ack"], ign_bins=[(1, 1)]))
