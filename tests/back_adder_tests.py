@@ -137,10 +137,10 @@ async def test_backpressure(top: handle.SimHandleBase):
 
 @cocotb.test()
 async def test_random(top: handle.SimHandleBase):
-    """Write data into fifo at random intervals,
-    while read data from fifo at random intervals.
+    """Write data into adder at random intervals,
+    while read result from adder at random intervals.
 
-    The rate at which data is written to faster than
+    The rate at which data is written is faster than
     the rate which data is read."""
 
     tb = Testbench(top)

@@ -12,6 +12,7 @@ def simulate_command(module_name: str, top_level: str, work_dir: typing.Optional
     return (f"MODULE={module_name} " +
             f"TOPLEVEL={top_level} " +
             f"SIM_BUILD={work_dir} " +
+            f"WORK_DIR={work_dir} " +
             f"SIM_ARGS=\"--vcd={work_dir}/waveform.vcd " +
             ("" if sim_args is None else f"{sim_args} ") + "\" " +
             f"COCOTB_RESULTS_FILE={work_dir}/results.xml " +

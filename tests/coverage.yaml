@@ -1,0 +1,75 @@
+top:
+  cover_percentage: 85.0
+  coverage: 17
+  size: 20
+  type: <class 'cocotb_coverage.coverage.CoverItem'>
+top.almost_full:
+  at_least: 1
+  bins:_hits:
+    0: 262
+    1: 214
+  cover_percentage: 100.0
+  coverage: 2
+  size: 2
+  type: <class 'cocotb_coverage.coverage.CoverPoint'>
+  weight: 1
+top.cross_data:
+  at_least: 1
+  bins:_hits:
+    (0, 0): 1
+    (0, 255): 2
+    '(0, <CoverageStates.MID_VALUE: 1>)': 89
+  cover_percentage: 100.0
+  coverage: 3
+  size: 3
+  type: <class 'cocotb_coverage.coverage.CoverCross'>
+  weight: 1
+top.cross_status:
+  at_least: 1
+  bins:_hits:
+    (0, 0, 0): 43
+    (0, 0, 1): 219
+    (0, 1, 0): 0
+    (0, 1, 1): 0
+    (1, 0, 0): 48
+    (1, 0, 1): 165
+    (1, 1, 0): 1
+    (1, 1, 1): 0
+  cover_percentage: 62.5
+  coverage: 5
+  size: 8
+  type: <class 'cocotb_coverage.coverage.CoverCross'>
+  weight: 1
+top.data_in:
+  at_least: 1
+  bins:_hits:
+    0: 4
+    ? !!python/object/apply:fifo_tests.CoverageStates
+    - 1
+    : 469
+    255: 3
+  cover_percentage: 100.0
+  coverage: 3
+  size: 3
+  type: <class 'cocotb_coverage.coverage.CoverPoint'>
+  weight: 1
+top.full:
+  at_least: 1
+  bins:_hits:
+    0: 475
+    1: 1
+  cover_percentage: 100.0
+  coverage: 2
+  size: 2
+  type: <class 'cocotb_coverage.coverage.CoverPoint'>
+  weight: 1
+top.valid:
+  at_least: 1
+  bins:_hits:
+    0: 92
+    1: 384
+  cover_percentage: 100.0
+  coverage: 2
+  size: 2
+  type: <class 'cocotb_coverage.coverage.CoverPoint'>
+  weight: 1
