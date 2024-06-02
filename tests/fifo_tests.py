@@ -8,6 +8,7 @@ import cocotb.clock as clock
 import cocotb.handle as handle
 import cocotb.triggers as triggers
 import cocotb_introduction.fifo as fifo
+import cocotb_introduction.valid as valid
 import cocotb_introduction.messages as messages
 from cocotb_introduction import reset
 import cocotb_introduction.queue as queue
@@ -25,8 +26,18 @@ class Testbench:
 
     def __init__(self, top: handle.SimHandleBase) -> None:
         super().__init__()
+
+        #############################
+        ## RECORD USEFUL PROPERTIES #
+        #############################
+
         self.width: int = top.WIDTH.value
         self.mask = (1 << self.width) - 1
+
+        #########################################
+        ## CREATE THE DRIVERS USED BY THE TESTS #
+        #########################################
+
         self.fifo_wr = fifo.FifoWriteDriver(
             clk=top.clk,
             rst=top.rst,
@@ -43,6 +54,44 @@ class Testbench:
             ack=top.ack,
             data_out=top.data_out)
 
+        ###################################
+        ## VERIFY DATA-RELATED OPERATIONS #
+        ###################################
+
+        wr_mon = valid.ValidMonitor(
+            clk=top.clk,
+            rst=top.rst,
+            valid=top.valid,
+            data=top.data_in)
+        rd_mon = valid.ValidMonitor(
+            clk=top.clk,
+            rst=top.rst,
+            valid=top.ack,
+            data=top.data_out)
+        wr_msgs = queue.Queue[messages.MonitorMessage]()
+        rd_msgs = queue.Queue[messages.MonitorMessage]()
+
+        async def observe(m: valid.ValidMonitor, q: queue.Queue[messages.MonitorMessage]) -> None:
+            while True:
+                await m.event
+                q.push(m.message)
+
+
+        async def check_data() -> None:
+            log = cocotb.log.getChild("check_data")
+            while True:
+                exp = (await wr_msgs.pop_wait()).data
+                act = (await rd_msgs.pop_wait()).data
+                log.info(f"Comparing expected {exp} against actual {act}...")
+                assert exp == act
+
+        cocotb.start_soon(observe(wr_mon, wr_msgs))
+        cocotb.start_soon(observe(rd_mon, rd_msgs))
+        cocotb.start_soon(check_data())
+
+        ################################
+        ## COVERAGE RELATED OPERATIONS #
+        ################################
 
         def coverage_rel_data(actual: int, bin: typing.Union[int, range]) -> bool:
             """Defines the rel function used to perform the determination on whether or
@@ -121,11 +170,15 @@ class Testbench:
                     sample_read(empty, ack, data_out)
                     await triggers.First(triggers.Edge(top.empty), triggers.Edge(top.ack), triggers.Edge(top.data_out))
 
+        cocotb.start_soon(cover_wr())
+        cocotb.start_soon(cover_rd())
+
+        ####################
+        ## CLOCK AND RESET #
+        ####################
 
         cocotb.start_soon(reset(top.clk, top.rst))
         cocotb.start_soon(clock.Clock(top.clk, 10, "ns").start())
-        cocotb.start_soon(cover_wr())
-        cocotb.start_soon(cover_rd())
 
 
 @cocotb.test()
@@ -133,17 +186,15 @@ async def test_basic(top: handle.SimHandleBase):
     """Simple test to quickly verify the fifo."""
 
     tb = Testbench(top)
-    data = [value & tb.mask for value in range(64)]
+    total = 64
+    data = [value & tb.mask for value in range(total)]
 
-    rd_msgs: typing.List[messages.ReadMessage] = []
     for value in data:
         tb.fifo_wr.write(value)
-        rd_msgs.append(tb.fifo_rd.read())
+        last_msg = tb.fifo_rd.read()
 
-    for exp, msg in zip(data, rd_msgs):
-        act = await msg.processed_wait()
-        cocotb.log.info(f"Comparing expected {exp} against actual {act}...")
-        assert exp == act
+    await last_msg.processed_wait()
+    await triggers.Timer(50, "ns")
 
 
 @cocotb.test()
@@ -151,7 +202,8 @@ async def test_backpressure(top: handle.SimHandleBase):
     """Fill up fifo. Wait a while. And then empty it, while reading data."""
 
     tb = Testbench(top)
-    data = [value & tb.mask for value in range(64)]
+    total = 64
+    data = [value & tb.mask for value in range(total)]
 
     for value in data:
         tb.fifo_wr.write(value)
@@ -161,14 +213,10 @@ async def test_backpressure(top: handle.SimHandleBase):
 
     await triggers.Timer(100, "ns")
 
-    rd_msgs: typing.List[messages.ReadMessage] = []
-    for _ in data:
-        rd_msgs.append(tb.fifo_rd.read())
-
-    for exp, rd_msg in zip(data, rd_msgs):
-        act = await rd_msg.processed_wait()
-        cocotb.log.info(f"Comparing expected {exp} against actual {act}...")
-        assert exp == act
+    for _ in range(total):
+        last_msg = tb.fifo_rd.read()
+    await last_msg.processed_wait()
+    await triggers.Timer(50, "ns")
 
 
 @cocotb.test()
@@ -180,8 +228,8 @@ async def test_random(top: handle.SimHandleBase):
     the rate which data is read."""
 
     tb = Testbench(top)
-    rd_queue = queue.Queue[messages.ReadMessage]()
-    data = [value & tb.mask for value in range(512)]
+    total = 512
+    data = [value & tb.mask for value in range(total)]
 
     async def random_wait(max_time: float):
         wait = random.randint(-50, max_time)
@@ -195,23 +243,16 @@ async def test_random(top: handle.SimHandleBase):
             await msg.started_wait()
 
     async def read_data():
-        for _ in data:
+        for _ in range(total):
             msg = tb.fifo_rd.read()
-            rd_queue.push(msg)
             await random_wait(70)
             await msg.started_wait()
-
-    async def check_data():
-        for exp in data:
-            msg = await rd_queue.pop_wait()
-            act = await msg.processed_wait()
-            cocotb.log.info(f"Comparing expected {exp} against actual {act}...")
-            assert exp == act
+        await msg.processed_wait()
+        await triggers.Timer(50, "ns")
 
     await triggers.Combine(
         cocotb.start_soon(write_data()),
-        cocotb.start_soon(read_data()),
-        cocotb.start_soon(check_data()))
+        cocotb.start_soon(read_data()))
 
 
 @cocotb.test()
