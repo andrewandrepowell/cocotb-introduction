@@ -1,6 +1,7 @@
 """
 Contains all the tests to verify the fifo.
 Functional coverage is set up with cocotb_coverage, but only reporting.
+More information on cocotb_coverage can be found in their official documentation.
 """
 import cocotb
 import cocotb.clock as clock
@@ -68,7 +69,7 @@ class Testbench:
             coverage.CoverPoint(name="top.valid", xf=lambda almost_full, full, valid, data_in : valid, bins=[1, 0]),
             coverage.CoverPoint(name="top.data_in", xf=lambda almost_full, full, valid, data_in : data_in, bins=[0, CoverageStates.MID_VALUE, self.mask],
                                 rel=coverage_rel_data),
-            coverage.CoverCross(name="top.wr.cross_data", items=["top.valid", "top.data_in"], ign_bins=[(1, None)]),
+            coverage.CoverCross(name="top.wr.cross_data", items=["top.valid", "top.data_in"], ign_bins=[(0, None)]),
             coverage.CoverCross(name="top.wr.cross_status", items=["top.almost_full", "top.full", "top.valid"], ign_bins=[(None, 1, 1), (0, 1, None)]))
         def sample_write(
             almost_full: int,
@@ -84,7 +85,7 @@ class Testbench:
             coverage.CoverPoint(name="top.ack", xf=lambda empty, ack, data_out : ack, bins=[1, 0]),
             coverage.CoverPoint(name="top.data_out", xf=lambda empty, ack, data_out : data_out, bins=[0, CoverageStates.MID_VALUE, self.mask],
                                 rel=coverage_rel_data),
-            coverage.CoverCross(name="top.rd.cross_data", items=["top.ack", "top.data_out"], ign_bins=[(1, None)]),
+            coverage.CoverCross(name="top.rd.cross_data", items=["top.ack", "top.data_out"], ign_bins=[(0, None)]),
             coverage.CoverCross(name="top.rd.cross_status", items=["top.empty", "top.ack"], ign_bins=[(1, 1)]))
         def sample_read(
             empty: int,

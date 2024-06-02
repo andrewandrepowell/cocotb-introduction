@@ -47,7 +47,7 @@ def adder_tests(c: invoke.Context) -> None:
 @invoke.task
 def back_adder_tests(c: invoke.Context) -> None:
     """Verifies the adder with back pressure."""
-    widths = (8,)
+    widths = (16, 32,)
     for width in widths:
         c.run(simulate_command(
             module_name="back_adder_tests",
