@@ -30,6 +30,7 @@ Default task: run
 - https://pipx.pypa.io/stable/installation/
 - https://ghdl-rad.readthedocs.io/en/latest/getting/mcode.html
 - https://docs.cocotb.org/en/stable/building.html # Definitely need a section going over the building arguments in the makefile.
+- https://github.com/cocotb/cocotb/issues/3540#issuecomment-1830049657
 
 ## Dependencies
 

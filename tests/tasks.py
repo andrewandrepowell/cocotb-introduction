@@ -86,6 +86,13 @@ def delta_cocotb_example(c: invoke.Context) -> None:
     c.run(simulate_command("delta_cocotb_example", "delta_cocotb_example"))
 
 
+@invoke.task
+def simulation_handle_example(c: invoke.Context) -> None:
+    """Demonstrates how cocotb's simulation handles work.
+    See the cocotb presentation and the test itself for more information."""
+    c.run(simulate_command("simulation_handle_example", "simulation_handle_example"))
+
+
 @invoke.task(
     fifo_tests,
     adder_tests,
@@ -109,6 +116,7 @@ tutorial_ns = invoke.Collection("tutorial")
 tutorial_ns.add_task(simple_tests, "simple")
 tutorial_ns.add_task(delta_example, "delta")
 tutorial_ns.add_task(delta_cocotb_example, "delta-cocotb")
+tutorial_ns.add_task(simulation_handle_example, "handle")
 ns.add_collection(tests_ns)
 ns.add_collection(tutorial_ns)
 ns.add_task(run)
