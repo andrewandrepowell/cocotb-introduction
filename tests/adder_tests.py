@@ -20,8 +20,12 @@ class ABDataHandle:
         self._b = b
 
     @property
-    def value(self) -> ABData:
+    def integer(self) -> ABData:
         return ABData(a=self._a.value.integer, b=self._b.value.integer)
+
+    @property
+    def value(self) -> typing.Self:
+        return self
 
     @value.setter
     def value(self, value: ABData) -> None:
@@ -35,7 +39,7 @@ async def test_random(top: handle.SimHandleBase) -> None:
         clk=top.clk,
         rst=top.rst,
         valid=top.abValid,
-        data=ABDataHandle(
+        data=ABDataHandle( # Using duct-typing here to fake it till we make it
             a=top.aData,
             b=top.bData))
 

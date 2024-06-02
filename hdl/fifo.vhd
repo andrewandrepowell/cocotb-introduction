@@ -38,8 +38,8 @@ begin
     i_f <= '1' when amt_cntr=DEPTH-1 else '0';
     i_af <= '1' when amt_cntr=ALMOST_FULL_DEPTH-1 else '0';
 
-    valid_data <= not i_f and valid;
-    ack_data <= not i_z and ack;
+    valid_data <= (not i_f or ack) and valid;
+    ack_data <= (not i_z or valid) and ack;
 
     amt_proc : process (clk)
     begin

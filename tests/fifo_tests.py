@@ -3,54 +3,45 @@ import cocotb.clock as clock
 import cocotb.handle as handle
 import cocotb.triggers as triggers
 import cocotb_introduction.fifo as fifo
-from cocotb_introduction import reset, Queue
+import cocotb_introduction.messages as messages
+from cocotb_introduction import reset
+import cocotb_introduction.queue as queue
 import typing
 import random
-import dataclasses
 
 
-@dataclasses.dataclass(frozen=True)
 class Testbench:
     """Contains all the essentials of the fifo testbench."""
-    width: int
-    mask: int
-    fifo_wr: fifo.FifoWriteDriver
-    fifo_rd: fifo.FifoReadDriver
 
+    def __init__(self, top: handle.SimHandleBase) -> None:
+        super().__init__()
+        self.width: int = top.WIDTH.value
+        self.mask = (1 << self.width) - 1
+        self.fifo_wr = fifo.FifoWriteDriver(
+            clk=top.clk,
+            rst=top.rst,
+            almost_full=top.almost_full,
+            full=top.full,
+            valid=top.valid,
+            data_in=top.data_in,
+            DEPTH=top.DEPTH.value,
+            ALMOST_FULL_DEPTH=top.ALMOST_FULL_DEPTH.value)
+        self.fifo_rd = fifo.FifoReadDriver(
+            clk=top.clk,
+            rst=top.rst,
+            empty=top.empty,
+            ack=top.ack,
+            data_out=top.data_out)
 
-def prepare_testbench(top: handle.SimHandleBase) -> Testbench:
-    """Quickly spin up a testbench to verify the fifo."""
-
-    width = top.WIDTH.value
-    mask = (1 << width) - 1
-
-    fifo_wr = fifo.FifoWriteDriver(
-        clk=top.clk,
-        rst=top.rst,
-        almost_full=top.almost_full,
-        full=top.full,
-        valid=top.valid,
-        data_in=top.data_in,
-        DEPTH=top.DEPTH.value,
-        ALMOST_FULL_DEPTH=top.ALMOST_FULL_DEPTH.value)
-    fifo_rd = fifo.FifoReadDriver(
-        clk=top.clk,
-        rst=top.rst,
-        empty=top.empty,
-        ack=top.ack,
-        data_out=top.data_out)
-
-    cocotb.start_soon(reset(top.clk, top.rst))
-    cocotb.start_soon(clock.Clock(top.clk, 10, "ns").start())
-
-    return Testbench(width=width, mask=mask, fifo_wr=fifo_wr, fifo_rd=fifo_rd)
+        cocotb.start_soon(reset(top.clk, top.rst))
+        cocotb.start_soon(clock.Clock(top.clk, 10, "ns").start())
 
 
 @cocotb.test()
 async def test_basic(top: handle.SimHandleBase):
     """Simple test to quickly verify the fifo."""
 
-    tb = prepare_testbench(top)
+    tb = Testbench(top)
     data = [value & tb.mask for value in range(64)]
 
     rd_msgs: typing.List[fifo.FifoReadMessage] = []
@@ -68,7 +59,7 @@ async def test_basic(top: handle.SimHandleBase):
 async def test_backpressure(top: handle.SimHandleBase):
     """Fill up fifo. Wait a while. And then empty it, while reading data."""
 
-    tb = prepare_testbench(top)
+    tb = Testbench(top)
     data = [value & tb.mask for value in range(64)]
 
     for value in data:
@@ -79,7 +70,7 @@ async def test_backpressure(top: handle.SimHandleBase):
 
     await triggers.Timer(100, "ns")
 
-    rd_msgs: typing.List[fifo.FifoReadMessage] = []
+    rd_msgs: typing.List[messages.ReadMessage] = []
     for _ in data:
         rd_msgs.append(tb.fifo_rd.read())
 
@@ -97,8 +88,8 @@ async def test_random(top: handle.SimHandleBase):
     The rate at which data is written to faster than
     the rate which data is read."""
 
-    tb = prepare_testbench(top)
-    rd_queue = Queue[fifo.FifoReadMessage]()
+    tb = Testbench(top)
+    rd_queue = queue.Queue[messages.ReadMessage]()
     data = [value & tb.mask for value in range(256)]
 
     async def random_wait(max_time: float):
