@@ -44,7 +44,7 @@ async def test_basic(top: handle.SimHandleBase):
     tb = Testbench(top)
     data = [value & tb.mask for value in range(64)]
 
-    rd_msgs: typing.List[fifo.FifoReadMessage] = []
+    rd_msgs: typing.List[messages.ReadMessage] = []
     for value in data:
         tb.fifo_wr.write(value)
         rd_msgs.append(tb.fifo_rd.read())

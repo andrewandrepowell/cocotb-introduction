@@ -12,6 +12,15 @@ from .messages import WriteMessage, ReadMessage, MonitorMessage
 import cocotb.handle as handle
 
 
+class ValidReadyInterface(typing.TypedDict):
+    """Represents all the signals of a valid-ready interface."""
+    clk: handle.SimHandleBase
+    rst: handle.SimHandleBase
+    valid: handle.SimHandleBase
+    ready: handle.SimHandleBase
+    data: handle.SimHandleBase
+
+
 class ValidReadyWriteDriver:
     """Writes data to the valid-ready interface."""
 
@@ -106,7 +115,7 @@ class ValidReadyReadDriver:
         return message
 
 
-class ValidReadyReadMonitor:
+class ValidReadyMonitor:
     """Observes a valid-ready interface."""
 
     def __init__(
@@ -132,6 +141,8 @@ class ValidReadyReadMonitor:
                         self._evt.set()
                     else:
                         await triggers.First(triggers.Edge(rst), triggers.Edge(valid), triggers.Edge(ready))
+
+        cocotb.start_soon(observe_valid_ready_intf())
 
     @property
     def event(self) -> triggers.PythonTrigger:

@@ -33,8 +33,8 @@ begin
 
     ab_fifo_inst : entity work.fifo
         generic map (
-            DEPTH => 2,
-            ALMOST_FULL_DEPTH => 2,
+            DEPTH => 3,
+            ALMOST_FULL_DEPTH => 3,
             WIDTH => 2*WIDTH)
         port map (
             clk => clk,
@@ -63,8 +63,8 @@ begin
 
     r_fifo_inst : entity work.fifo
         generic map (
-            DEPTH => 2,
-            ALMOST_FULL_DEPTH => 1,
+            DEPTH => 4,
+            ALMOST_FULL_DEPTH => 3,
             WIDTH => WIDTH)
         port map (
             clk => clk,

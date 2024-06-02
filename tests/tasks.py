@@ -44,6 +44,18 @@ def adder_tests(c: invoke.Context) -> None:
 
 
 @invoke.task
+def back_adder_tests(c: invoke.Context) -> None:
+    """Verifies the adder with back pressure."""
+    widths = (8,)
+    for width in widths:
+        c.run(simulate_command(
+            module_name="back_adder_tests",
+            top_level="back_adder",
+            work_dir=f"back_adder_tests_width_{width}",
+            sim_args=f"-gWIDTH={width}"))
+
+
+@invoke.task
 def fifo_tests(c: invoke.Context) -> None:
     """Verifies the fifo."""
     widths = (4, 8,)
@@ -76,6 +88,7 @@ def delta_cocotb_example(c: invoke.Context) -> None:
 @invoke.task(
     fifo_tests,
     adder_tests,
+    back_adder_tests,
     simple_tests,
     delta_example,
     delta_cocotb_example,
@@ -90,6 +103,7 @@ ns = invoke.Collection()
 tests_ns = invoke.Collection("test")
 tests_ns.add_task(fifo_tests, "fifo")
 tests_ns.add_task(adder_tests, "adder")
+tests_ns.add_task(back_adder_tests, "back-adder")
 tutorial_ns = invoke.Collection("tutorial")
 tutorial_ns.add_task(simple_tests, "simple")
 tutorial_ns.add_task(delta_example, "delta")
