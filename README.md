@@ -2,7 +2,7 @@
 
 ## Summary
 
-cocotb-introduction is a set of reference tests and examples for developers who need examples on how to use cocotb for verification. The examples are referenced by the [cocotb-introduction presentation](). The tests are complete examples on what a full test might look like, including an example of functional coverage with cocotb_coverage and an UVM test with pyuvm.
+cocotb-introduction is a set of reference tests and examples for developers who need examples on how to use cocotb for verification. The examples are referenced by the [cocotb-introduction presentation](https://docs.google.com/presentation/d/1zugOCcWV_SXj0Bq5WKZequVLZ3Uh8_YhImmvimYsgEc/edit?usp=sharing). The tests are complete examples on what a full test might look like, including an example of functional coverage with cocotb_coverage and an UVM test with pyuvm.
 
 ## Dependencies
 
