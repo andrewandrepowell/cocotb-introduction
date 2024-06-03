@@ -108,7 +108,7 @@ async def test_basic(top: handle.SimHandleBase):
         last_rd = tb.rd_driver.read()
 
     await last_rd.processed_wait()
-    await triggers.ReadOnly()
+    await triggers.Timer(10, "ns")
 
 
 @cocotb.test()
@@ -132,7 +132,7 @@ async def test_backpressure(top: handle.SimHandleBase):
         last_rd = tb.rd_driver.read()
 
     await last_rd.processed_wait()
-    await triggers.ReadOnly()
+    await triggers.Timer(10, "ns")
 
 
 @cocotb.test()
@@ -165,7 +165,7 @@ async def test_random(top: handle.SimHandleBase):
             await random_wait(70)
             await msg.started_wait()
         await msg.processed_wait()
-        await triggers.ReadOnly()
+        await triggers.Timer(10, "ns")
 
     await triggers.Combine(
         cocotb.start_soon(write_data()),

@@ -1,6 +1,9 @@
 """
 Contains the basic definition of queue built with the cocotb.triggers.Event.
 Queue is used to safely move data between tasks.
+
+WARNING: As it turns out, cocotb already comes with a Queue!
+         Didn't realize it at the time, so use cocotb's version instead.
 """
 import collections
 import typing

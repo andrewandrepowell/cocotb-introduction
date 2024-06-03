@@ -362,6 +362,20 @@ dev = ["check-manifest", "nose"]
 test = ["coverage", "nose"]
 
 [[package]]
+name = "pyuvm"
+version = "2.9.1"
+description = "A Python implementation of the UVM using cocotb"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pyuvm-2.9.1-py3-none-any.whl", hash = "sha256:d988a3e8326a74f610bef381ab3a9bd21e3a30e5e48d1852fa134de3811c9346"},
+    {file = "pyuvm-2.9.1.tar.gz", hash = "sha256:d9377ead1b20ca0c19ee21d8ecbcdf411949d28c49e3d5119f803e12069e2aea"},
+]
+
+[package.dependencies]
+cocotb = ">=1.6.0"
+
+[[package]]
 name = "pyyaml"
 version = "6.0.1"
 description = "YAML parser and emitter for Python"
@@ -435,4 +449,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "c088f920c178cb03d5b5e94802fd557e291fcddfec8a35d3c219fa3d9545c449"
+content-hash = "46afa4385f2753c9bad168fefe4652cde8e3acf289cea7e7cda10bf24eecd174"

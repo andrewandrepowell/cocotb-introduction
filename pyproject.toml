@@ -14,6 +14,7 @@ pytest = "^8.2.1"
 cocotb-coverage = "^1.2.0"
 beautifulsoup4 = "^4.12.3"
 lxml = "^5.2.2"
+pyuvm = "^2.9.1"
 
 
 [build-system]
