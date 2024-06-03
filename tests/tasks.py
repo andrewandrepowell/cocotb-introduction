@@ -123,7 +123,7 @@ def back_adder_uvm(c: invoke.Context) -> None:
 
 @invoke.task
 def fifo_tests(c: invoke.Context) -> None:
-    """Verifies the fifo."""
+    """Verifies the fifo. Includes functional coverage with cocotb_coverage."""
     widths = (4, 8,)
     depths = (2, 32, 64,)
     af_depths = (2, 16, 32,)

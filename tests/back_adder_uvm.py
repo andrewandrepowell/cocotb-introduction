@@ -134,7 +134,7 @@ class RdDriver(pyuvm.uvm_driver):
 
         async def perform_rd() -> None:
             while True:
-                _: ABSeqItem = await self.seq_item_port.get_next_item()
+                _: RSeqItem = await self.seq_item_port.get_next_item()
                 self.seq_item_port.item_done()
                 r_msg = self.r_drv.read()
                 r_msgs.push(r_msg)
