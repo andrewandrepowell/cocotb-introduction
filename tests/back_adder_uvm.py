@@ -105,11 +105,12 @@ class RRandomSeq(pyuvm.uvm_sequence):
 
 class TestAllSeq(pyuvm.uvm_sequence):
     async def body(self):
-        ab_seqr = pyuvm.ConfigDB().get(None, "", "AB_SEQR")
-        r_seqr = pyuvm.ConfigDB().get(None, "", "R_SEQR")
-        ab_delay = pyuvm.ConfigDB().get(None, "", "AB_DELAY")
-        r_delay = pyuvm.ConfigDB().get(None, "", "R_DELAY")
-        length = pyuvm.ConfigDB().get(None, "", "LENGTH")
+        config_db = pyuvm.ConfigDB()
+        ab_seqr = config_db.get(None, "", "AB_SEQR")
+        r_seqr = config_db.get(None, "", "R_SEQR")
+        ab_delay = config_db.get(None, "", "AB_DELAY")
+        r_delay = config_db.get(None, "", "R_DELAY")
+        length = config_db.get(None, "", "LENGTH")
         ab_seq = ABRandomSeq("ab_seq", length=length, max_wait=ab_delay)
         r_seq = RRandomSeq("r_seq", length=length, max_wait=r_delay)
         await triggers.Combine(
@@ -220,13 +221,14 @@ class Environment(pyuvm.uvm_env):
         cocotb.start_soon(reset(cocotb.top.clk, cocotb.top.rst))
 
     def build_phase(self) -> None:
-        pyuvm.ConfigDB().set(None, "*", "LENGTH", 64)
-        pyuvm.ConfigDB().set(None, "*", "AB_DELAY", 50)
-        pyuvm.ConfigDB().set(None, "*", "R_DELAY", 60)
+        config_db = pyuvm.ConfigDB()
+        config_db.set(None, "*", "LENGTH", 64)
+        config_db.set(None, "*", "AB_DELAY", 50)
+        config_db.set(None, "*", "R_DELAY", 60)
         self.ab_seqr = pyuvm.uvm_sequencer("ab_seqr", self)
         self.r_seqr = pyuvm.uvm_sequencer("r_seqr", self)
-        pyuvm.ConfigDB().set(None, "*", "AB_SEQR", self.ab_seqr)
-        pyuvm.ConfigDB().set(None, "*", "R_SEQR", self.r_seqr)
+        config_db.set(None, "*", "AB_SEQR", self.ab_seqr)
+        config_db.set(None, "*", "R_SEQR", self.r_seqr)
         self.wr_drv = WrDriver("wr_drv", self)
         self.rd_drv = RdDriver("rd_drv", self)
         self.mon = Monitor("mon", self)

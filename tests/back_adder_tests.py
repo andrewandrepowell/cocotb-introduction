@@ -47,8 +47,7 @@ class Testbench:
             ready=top.ab_ready,
             data=ABDataHandle(
                 a=top.a_data,
-                b=top.b_data)
-        )
+                b=top.b_data))
         rd_interface = validready.ValidReadyInterface(clk=top.clk,
             rst=top.rst,
             valid=top.r_valid,
