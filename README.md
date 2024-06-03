@@ -31,7 +31,7 @@ Available tasks:
   test.adder              Verifies the adder.
   test.back-adder         Verifies the adder with back pressure.
   test.back-adder-uvm     Verifies the adder with back pressure, using pyuvm.
-  test.fifo               Verifies the fifo.
+  test.fifo               Verifies the fifo. Includes functional coverage with cocotb_coverage.
   tutorial.delta          The only purpose of this test is to demonstrate how simulator works.
   tutorial.delta-cocotb   The only purpose of this test is to demonstrate how simulator works with cocotb.
   tutorial.handle         Demonstrates how cocotb's simulation handles work.
