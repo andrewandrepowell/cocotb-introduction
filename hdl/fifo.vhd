@@ -12,6 +12,8 @@ entity fifo is
         clk : in std_logic; -- clock
         rst : in std_logic; -- synchronous assert-high reset
         empty : out std_logic; -- indicates the fifo is empty
+        overflow : out std_logic; -- indicates the fifo overflowed. reset required.
+        underflow : out std_logic; -- indicates the fifo underflowed. reset required.
         full : out std_logic; -- indicates the fifo is full
         almost_full : out std_logic; -- indicates the fifo is almost full, as dictated by the ALMOST_FULL_DEPTH generic
         valid : in std_logic; -- indicates the input data is valid
@@ -27,7 +29,6 @@ architecture rtl of fifo is
     signal wr_ptr, rd_ptr, amt_cntr : pointer_type;
     signal memory : memory_type;
     signal n_z, n_f, i_z, i_f, n_af, i_af : std_logic;
-    signal valid_data, ack_data : std_logic;
 begin
 
     n_z <= '1' when amt_cntr=1 else '0';
@@ -38,18 +39,15 @@ begin
     i_f <= '1' when amt_cntr=DEPTH-1 else '0';
     i_af <= '1' when amt_cntr=ALMOST_FULL_DEPTH-1 else '0';
 
-    valid_data <= not i_f and valid;
-    ack_data <= not i_z and ack;
-
     amt_proc : process (clk)
     begin
         if rising_edge(clk) then
             if rst/='0' then
                 amt_cntr <= 0;
             else
-                if valid_data and not ack_data then
+                if valid and not ack then
                     amt_cntr <= amt_cntr+1;
-                elsif not valid_data and ack_data then
+                elsif not valid and ack then
                     amt_cntr <= amt_cntr-1;
                 end if;
             end if;
@@ -63,21 +61,29 @@ begin
                 full <= i_f;
                 empty <= i_z;
                 almost_full <= i_af;
+                overflow <= '0';
+                underflow <= '0';
             else
-                if valid_data and not ack_data and i_z then
+                if valid and not ack and i_z then
                     empty <= '0';
-                elsif not valid_data and ack_data and n_z then
+                elsif not valid and ack and n_z then
                     empty <= '1';
                 end if;
-                if valid_data and not ack_data and n_f then
+                if valid and not ack and n_f then
                     full <= '1';
-                elsif not valid_data and ack_data and i_f then
+                elsif not valid and ack and i_f then
                     full <= '0';
                 end if;
-                if valid_data and not ack_data and n_af then
+                if valid and not ack and n_af then
                     almost_full <= '1';
-                elsif not valid_data and ack_data and i_af then
+                elsif not valid and ack and i_af then
                     almost_full <= '0';
+                end if;
+                if valid and not ack and i_f then
+                    overflow <= '1';
+                end if;
+                if not valid and ack and i_z then
+                    underflow <= '1';
                 end if;
             end if;
         end if;
@@ -90,14 +96,14 @@ begin
                 wr_ptr <= 0;
                 rd_ptr <= 0;
             else
-                if valid_data then
+                if valid then
                     if wr_ptr=DEPTH-1 then
                         wr_ptr <= 0;
                     else
                         wr_ptr <= wr_ptr+1;
                     end if;
                 end if;
-                if ack_data then
+                if ack then
                     if rd_ptr=DEPTH-1 then
                         rd_ptr <= 0;
                     else
