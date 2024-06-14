@@ -24,20 +24,22 @@ end entity fifo;
 
 architecture rtl of fifo is
     subtype pointer_type is natural range 0 to DEPTH-1;
+    subtype amount_type is natural range 0 to DEPTH;
     subtype data_type is std_logic_vector(WIDTH-1 downto 0);
     type memory_type is array(pointer_type) of data_type;
-    signal wr_ptr, rd_ptr, amt_cntr : pointer_type;
+    signal wr_ptr, rd_ptr : pointer_type;
+    signal amt_cntr : amount_type;
     signal memory : memory_type;
     signal n_z, n_f, i_z, i_f, n_af, i_af : std_logic;
 begin
 
     n_z <= '1' when amt_cntr=1 else '0';
-    n_f <= '1' when amt_cntr=DEPTH-2 else '0';
-    n_af <= '1' when amt_cntr=ALMOST_FULL_DEPTH-2 else '0';
+    n_f <= '1' when amt_cntr=DEPTH-1 else '0';
+    n_af <= '1' when amt_cntr=ALMOST_FULL_DEPTH-1 else '0';
 
     i_z <= '1' when amt_cntr=0 else '0';
-    i_f <= '1' when amt_cntr=DEPTH-1 else '0';
-    i_af <= '1' when amt_cntr=ALMOST_FULL_DEPTH-1 else '0';
+    i_f <= '1' when amt_cntr=DEPTH else '0';
+    i_af <= '1' when amt_cntr=ALMOST_FULL_DEPTH else '0';
 
     amt_proc : process (clk)
     begin
@@ -58,9 +60,9 @@ begin
     begin
         if rising_edge(clk) then
             if rst/='0' then
-                full <= i_f;
-                empty <= i_z;
-                almost_full <= i_af;
+                full <= '0';
+                empty <= '1';
+                almost_full <= '0';
                 overflow <= '0';
                 underflow <= '0';
             else
@@ -117,7 +119,9 @@ begin
     memory_proc : process (clk)
     begin
         if rising_edge(clk) then
-            memory(wr_ptr) <= data_in;
+            if valid then
+                memory(wr_ptr) <= data_in;
+            end if;
         end if;
     end process memory_proc;
 
