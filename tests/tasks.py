@@ -124,17 +124,18 @@ def back_adder_uvm(c: invoke.Context) -> None:
 @invoke.task
 def fifo_tests(c: invoke.Context) -> None:
     """Verifies the fifo. Includes functional coverage with cocotb_coverage."""
+    top_levels = ("fifo", "bfifo",)
     widths = (4, 8,)
     depths = (2, 32, 64,)
     af_depths = (2, 16, 32,)
-    for width, depth, af_depth in itertools.product(widths, depths, af_depths):
+    for top_level, width, depth, af_depth in itertools.product(top_levels, widths, depths, af_depths):
         if af_depth > depth:
             continue
         run_simulation(
             c=c,
             module_name="fifo_tests",
-            top_level="fifo",
-            work_dir=f"fifo_tests_width_{width}_depth_{depth}_afdepth_{af_depth}",
+            top_level=top_level,
+            work_dir=f"{top_level}_tests_width_{width}_depth_{depth}_afdepth_{af_depth}",
             sim_args=f"-gWIDTH={width} -gDEPTH={depth} -gALMOST_FULL_DEPTH={af_depth}")
 
 

@@ -186,7 +186,7 @@ async def test_basic(top: handle.SimHandleBase):
     """Simple test to quickly verify the fifo."""
 
     tb = Testbench(top)
-    total = 64
+    total = 128
     data = [value & tb.mask for value in range(total)]
 
     for value in data:
@@ -202,7 +202,7 @@ async def test_backpressure(top: handle.SimHandleBase):
     """Fill up fifo. Wait a while. And then empty it, while reading data."""
 
     tb = Testbench(top)
-    total = 64
+    total = 128
     data = [value & tb.mask for value in range(total)]
 
     for value in data:

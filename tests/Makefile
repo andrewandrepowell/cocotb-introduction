@@ -4,6 +4,7 @@ SIM ?= ghdl
 TOPLEVEL_LANG ?= vhdl
 VHDL_SOURCES += $(HDL_DIR)/simple_adder.vhd
 VHDL_SOURCES += $(HDL_DIR)/fifo.vhd
+VHDL_SOURCES += $(HDL_DIR)/bfifo.vhd
 VHDL_SOURCES += $(HDL_DIR)/delta_example.vhd
 VHDL_SOURCES += $(HDL_DIR)/delta_cocotb_example.vhd
 VHDL_SOURCES += $(HDL_DIR)/back_adder.vhd
