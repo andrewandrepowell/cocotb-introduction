@@ -11,7 +11,7 @@ import typing
 import random
 
 
-WIDTH: int = cocotb.top.WIDTH.value.integer
+WIDTH: int = cocotb.top.WIDTH.value
 MASK = (1 << WIDTH) - 1
 
 

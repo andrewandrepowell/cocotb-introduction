@@ -1,6 +1,6 @@
 # Shouldn't change
 HDL_DIR = $(PWD)/../hdl
-SIM ?= ghdl
+SIM ?= nvc
 TOPLEVEL_LANG ?= vhdl
 VHDL_SOURCES += $(HDL_DIR)/simple_adder.vhd
 VHDL_SOURCES += $(HDL_DIR)/fifo.vhd
@@ -14,8 +14,8 @@ VHDL_SOURCES += $(HDL_DIR)/simulation_handle_example.vhd
 TOPLEVEL ?= simple_adder # Toplevel module in HDL.
 MODULE ?= simple_tests # Python test
 SIM_BUILD ?= simple_tests.work # Working directory
-EXTRA_ARGS ?= --std=08 # Specify VHDL 2008 for both compile and execute phases
-SIM_ARGS ?= --vcd=simple_tests.work/waveform.vcd # Simulation arguments.
+#EXTRA_ARGS ?= --std=08 # Specify VHDL 2008 for both compile and execute phases
+SIM_ARGS ?= --wave=simple_tests.work/waveform.vcd # Simulation arguments.
 COCOTB_RESULTS_FILE ?= simple_tests.work/results.xml # Results file
 
 # include cocotb's make rules to take care of the simulator setup

@@ -34,7 +34,7 @@ def run_simulation(c: invoke.Context, module_name: str, top_level: str, work_dir
         f"TOPLEVEL={top_level} " +
         f"SIM_BUILD={work_path.as_posix()} " +
         f"WORK_DIR={work_path.as_posix()} " +
-        f"SIM_ARGS=\"--vcd={waveform_path.as_posix()} " +
+        f"SIM_ARGS=\"--wave={waveform_path.as_posix()} " +
         ("" if sim_args is None else f"{sim_args} ") + "\" " +
         f"COCOTB_RESULTS_FILE={results_path.as_posix()} " +
         f"make " +

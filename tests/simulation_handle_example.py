@@ -1,46 +1,65 @@
 import cocotb
 import cocotb.triggers as triggers
 import cocotb.binary as binary
+import cocotb.types as types
+import cocotb.handle as handle
 
 
 @cocotb.test()
 async def simulation_handle_example(top):
 
-    # Accessing simulation handles
-    cocotb.log.info("Demonstrating how simulation handles can be accessed...")
-    cocotb.log.info(f"top.a.value={top.a.value}")
-    cocotb.log.info(f"top.delta_inst.a.value={top.delta_inst.a.value}")
-    cocotb.log.info(f"top.ex0_gen.delta_inst.a.value={top.ex0_gen.delta_inst.a.value}")
+    cocotb.log.info("The following examples are applicable to logics (e.g. std_logic, std_logic_vector, etc).")
 
-    # https://github.com/cocotb/cocotb/issues/3540#issuecomment-1830049657
-    # GHDL limitation
-    # dir needs to be called on parent of a generator loop,
-    # as well as the nested regions within the loop.
-    dir(top)
-    gen_loop = getattr(top, 'ex1_gen(0)')
-    dir(gen_loop)
-    dir(gen_loop.delta_inst)
-    cocotb.log.info(f"top.ex1_gen(0).delta_inst.a.value={gen_loop.delta_inst.a.value}")
-
-    # Accessing the value of a simulation handle is done with the "value" property.
     cocotb.log.info("Demonstrating how the values of simulation handles can be accessed...")
     top.a.value = 0
     cocotb.log.info(f"top.a.value={top.a.value}")
     await triggers.Edge(top.a)
     cocotb.log.info(f"top.a.value={top.a.value}")
 
-    # Array elements can be accessed with the square-brackets.
-    cocotb.log.info(f"top.c[1].value={top.c[1].value}")
-
-    # Return type for logics is always BinaryValue.
-    # It's recommended to convert from BinaryValue to either integer or binstr (binary value as string).
+    cocotb.log.info("Demonstrating how to utilize BinaryValue, the return type when reading the value property of a simulation handle.")
     a = top.a.value
     assert isinstance(a, binary.BinaryValue)
     cocotb.log.info(f"type(a)={type(a)}")
     cocotb.log.info(f"a.integer={a.integer}, type(a.integer)={type(a.integer)}")
     cocotb.log.info(f"a.binstr={a.binstr}, type(a.binstr)={type(a.binstr)}")
+    # It's worth pointing out BinaryValues can also be written to a simulation handle's value property.
 
-    # Unresolved logics can't be converted into integers.
+    cocotb.log.info("Demonstrating how to access instantiations within a component using the dot operator...")
+    cocotb.log.info(f"top.delta_inst.a.value={top.delta_inst.a.value}")
+
+    cocotb.log.info("Dot operation can also be applied to generator blocks...")
+    cocotb.log.info(f"top.ex0_gen.delta_inst.a.value={top.ex0_gen.delta_inst.a.value}")
+
+    cocotb.log.info("Demonstrating how to access array elemnents with the square brackets...")
+    cocotb.log.info(f"top.c[1].value={top.c[1].value}")
+
+    cocotb.log.info("Demonstrating how to access generator loops with the square brackets...")
+    cocotb.log.info(f"top.ex1_gen[1].delta_inst.a.value={top.ex1_gen[1].delta_inst.a.value}")
+
+    cocotb.log.info("The Python len operator can be used to determine the length of a logic.")
+    for i in range(len(top.b)):
+        cocotb.log.info(f"top.b[{i}].value.binstr={top.b[i].value.binstr}")
+
+    cocotb.log.info("LogicArrays can be used instead of BinaryValue for much easier slicing.")
+    la = types.LogicArray(top.b.value)
+    cocotb.log.info(f"la={la}")
+    cocotb.log.info(f"la[2:0]={la[2:0]}")
+    cocotb.log.info(f"la[3:1]={la[3:1]}")
+
+    cocotb.log.info("The range can also be acquired from a simulation handle if it's a logic array.")
+    cocotb.log.info("Be careful, the Python convention is that properties prefixed with an underscore are intended for internal use, however it's currently the only way to get the range.")
+    def GetRange(h: handle.ModifiableObject) -> types.Range | None:
+        if h._range:
+            assert len(h._range) == 2
+            return types.Range(h._range[0], 'to' if h._range[0] < h._range[1] else 'downto', h._range[1])
+        else:
+            return None
+    cocotb.log.info(f"top.a._range={top.a._range}")
+    cocotb.log.info(f"top.b._range={top.b._range}")
+    cocotb.log.info(f"GetRange(top.a)={GetRange(top.a)}")
+    cocotb.log.info(f"GetRange(top.b)={GetRange(top.b)}")
+
+    cocotb.log.info("Unresolved logics can't be converted into integers.")
     b = top.b.value
     cocotb.log.info(f"b={b}")
     assert isinstance(b, binary.BinaryValue)
@@ -49,30 +68,37 @@ async def simulation_handle_example(top):
     except ValueError as err:
         cocotb.log.info(err)
 
-    # But they can be converted into binary strings.
+    cocotb.log.info(f"But they can be converted into binary strings.")
     cocotb.log.info(f"b.binstr={b.binstr}")
 
-    # Resolved logics can of course be converted into integers.
+    cocotb.log.info(f"Resolved logics can of course be converted into integers.")
     top.b.value = 0b101
     cocotb.log.info(f"top.b.value={top.b.value}")
-    dir(top.b) # GHDL limitation. Without this, Edge doesn't work on multibit handles.
     await triggers.Edge(top.b)
     cocotb.log.info(f"top.b.value.integer={top.b.value.integer}")
 
-    # Len can be used to determine width of logics.
-    cocotb.log.info("Demonstrating how the ranges of the simulation handles can be accessed...")
-    cocotb.log.info(f"len(top.b)={len(top.b)}")
+    cocotb.log.info(f"Aside from logics, reals, strings, and integers can also be accessed from cocotb...")
 
-    # Range can be determined with _rang.
-    # Be aware this property isn't intended for public access!
-    cocotb.log.info(f"top.b._range={top.b._range}")
+    cocotb.log.info("Integer access...")
+    cocotb.log.info(f"type(top.d.value)={type(top.d.value)}")
+    top.d.value = 3333
+    cocotb.log.info(f"top.d.value={top.d.value}")
+    await triggers.Edge(top.d)
+    cocotb.log.info(f"top.d.value={top.d.value}")
 
-    # What about accessing bit-slices, integers, floats, and strings?
-    # Well, not going to be shown in this example since I had trouble accessing these types myself!
-    # Future problem to solve.
-    # Integers can still be accessed, but it's inconsistent with Questa.
-    # It appears integers with GHDL are treated the same as logics.
+    cocotb.log.info("Real access...")
+    cocotb.log.info(f"type(top.e.value)={type(top.e.value)}")
+    top.e.value = 1.3
+    cocotb.log.info(f"top.e.value={top.d.value}")
+    await triggers.Edge(top.e)
+    cocotb.log.info(f"top.d.value={top.e.value}")
 
+    cocotb.log.info("String access...")
+    cocotb.log.info(f"type(top.f.value)={type(top.f.value)}")
+    top.f.value = "what?" # Can't set more characters than what the signal's constraints allow.
+    cocotb.log.info(f"top.f.value={top.f.value.decode()}")
+    await triggers.Edge(top.f)
+    cocotb.log.info(f"top.d.value={top.f.value.decode()}")
 
 
 
