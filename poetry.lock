@@ -122,17 +122,6 @@ files = [
 ]
 
 [[package]]
-name = "install"
-version = "1.3.5"
-description = "Install packages from within code"
-optional = false
-python-versions = ">=2.7, >=3.5"
-files = [
-    {file = "install-1.3.5-py3-none-any.whl", hash = "sha256:0d3fadf4aa62c95efe8d34757c8507eb46177f86c016c21c6551eafc6a53d5a9"},
-    {file = "install-1.3.5.tar.gz", hash = "sha256:e67c8a0be5ccf8cb4ffa17d090f3a61b6e820e6a7e21cd1d2c0f7bc59b18e647"},
-]
-
-[[package]]
 name = "invoke"
 version = "2.2.0"
 description = "Pythonic task execution"
@@ -449,4 +438,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "46afa4385f2753c9bad168fefe4652cde8e3acf289cea7e7cda10bf24eecd174"
+content-hash = "c9e3e751ca4189c9e3463042e2b8246dd44827940162b0797dde19732acb2607"
