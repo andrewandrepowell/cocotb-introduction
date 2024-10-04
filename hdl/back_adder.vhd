@@ -42,7 +42,7 @@ begin
             empty => ab_empty,
             full => ab_full,
             almost_full => open,
-            valid => ab_valid,
+            valid => ab_valid and ab_ready,
             ack => ab_ack,
             data_in => ab_word,
             data_out => adder_word);
@@ -73,7 +73,7 @@ begin
             full => open,
             almost_full => r_almost_full,
             valid => adder_valid,
-            ack => r_ready,
+            ack => r_ready and r_valid,
             data_in => adder_data,
             data_out => r_data);
 
