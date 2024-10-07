@@ -7,6 +7,7 @@ from cocotb_introduction import reset
 import cocotb_introduction.validready as validready
 import cocotb_introduction.messages as messages
 import cocotb_introduction.queue as queue
+import cocotb_introduction.runner as runner
 import typing
 
 
@@ -35,7 +36,7 @@ class ABDataHandle:
         self._b.value = value.b
 
 
-class Testbench:
+class DUT_Testbench:
     def __init__(self, top: handle.SimHandleBase) -> None:
         super().__init__()
         self.width: int = top.WIDTH.value
@@ -93,10 +94,10 @@ class Testbench:
 
 
 @cocotb.test()
-async def test_basic(top: handle.SimHandleBase):
+async def basic_test(top: handle.SimHandleBase):
     """Simple test to quickly verify the fifo."""
 
-    tb = Testbench(top)
+    tb = DUT_Testbench(top)
     total = 16
     a_data = [random.randint(0, tb.mask) for _ in range(total)]
     b_data = [random.randint(0, tb.mask) for _ in range(total)]
@@ -111,10 +112,10 @@ async def test_basic(top: handle.SimHandleBase):
 
 
 @cocotb.test()
-async def test_backpressure(top: handle.SimHandleBase):
+async def backpressure_test(top: handle.SimHandleBase):
     """Fill up adder. Wait a while. And the continue."""
 
-    tb = Testbench(top)
+    tb = DUT_Testbench(top)
     total = 16
     a_data = [random.randint(0, tb.mask) for _ in range(total)]
     b_data = [random.randint(0, tb.mask) for _ in range(total)]
@@ -135,14 +136,14 @@ async def test_backpressure(top: handle.SimHandleBase):
 
 
 @cocotb.test()
-async def test_random(top: handle.SimHandleBase):
+async def random_test(top: handle.SimHandleBase):
     """Write data into adder at random intervals,
     while read result from adder at random intervals.
 
     The rate at which data is written is faster than
     the rate which data is read."""
 
-    tb = Testbench(top)
+    tb = DUT_Testbench(top)
     total = 16
     a_data = [random.randint(0, tb.mask) for _ in range(total)]
     b_data = [random.randint(0, tb.mask) for _ in range(total)]
@@ -169,3 +170,19 @@ async def test_random(top: handle.SimHandleBase):
     await triggers.Combine(
         cocotb.start_soon(write_data()),
         cocotb.start_soon(read_data()))
+
+
+def test_back_adder() -> None:
+    """Verifies the adder with back pressure."""
+    widths = (16, 32,)
+    for width in widths:
+        runner.run(
+            hdl_toplevel="back_adder",
+            test_module="tests.test_back_adder",
+            work=f"back_adder_tests_width_{width}",
+            parameters={"WIDTH": width})
+
+
+if __name__ == "__main__":
+    test_back_adder()
+    pass

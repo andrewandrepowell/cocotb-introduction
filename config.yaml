@@ -1,0 +1,12 @@
+runner:
+  simulator: nvc
+  hdl_library: work
+  vhdl_sources:
+    - hdl/simple_adder.vhd
+    - hdl/fifo.vhd
+    - hdl/bfifo.vhd
+    - hdl/delta_example.vhd
+    - hdl/delta_cocotb_example.vhd
+    - hdl/back_adder.vhd
+    - hdl/simulation_handle_example.vhd
+log_enable: false

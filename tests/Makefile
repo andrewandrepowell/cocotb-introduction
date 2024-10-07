@@ -14,7 +14,6 @@ VHDL_SOURCES += $(HDL_DIR)/simulation_handle_example.vhd
 TOPLEVEL ?= simple_adder # Toplevel module in HDL.
 MODULE ?= simple_tests # Python test
 SIM_BUILD ?= simple_tests.work # Working directory
-#EXTRA_ARGS ?= --std=08 # Specify VHDL 2008 for both compile and execute phases
 SIM_ARGS ?= --wave=simple_tests.work/waveform.vcd # Simulation arguments.
 COCOTB_RESULTS_FILE ?= simple_tests.work/results.xml # Results file
 

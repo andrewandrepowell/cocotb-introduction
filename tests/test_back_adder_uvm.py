@@ -6,16 +6,18 @@ import pyuvm
 import cocotb_introduction.validready as validready
 import cocotb_introduction.messages as messages
 import cocotb_introduction.queue as queue
+import cocotb_introduction.runner as runner
 from cocotb_introduction import reset
 import typing
 import random
 
 
-WIDTH: int = cocotb.top.WIDTH.value
-MASK = (1 << WIDTH) - 1
+WIDTH = typing.cast(int | None, None)
+MASK = typing.cast(int | None, None)
 
 
 def adder_model(a: int, b: int) -> int:
+    assert MASK
     return (a + b) & MASK
 
 
@@ -55,11 +57,13 @@ class ABDataHandle:
 class ABSeqItem(pyuvm.uvm_sequence_item):
     def __init__(self, name: str, data: ABData = ABData(0, 0)) -> None:
         super().__init__(name)
+        assert MASK
         assert 0 <= data.a <= MASK
         assert 0 <= data.b <= MASK
         self.data = data
 
     def randomize(self) -> None:
+        assert MASK
         self.data = ABData(random.randint(0, MASK), random.randint(0, MASK))
 
     def __eq__(self, other: typing.Any) -> bool:
@@ -242,8 +246,11 @@ class Environment(pyuvm.uvm_env):
 
 
 @pyuvm.test()
-class Test(pyuvm.uvm_test):
+class UVM_Test(pyuvm.uvm_test):
     def build_phase(self) -> None:
+        global WIDTH, MASK
+        WIDTH = typing.cast(int, cocotb.top.WIDTH.value)
+        MASK = (1 << WIDTH) - 1
         self.env = Environment("env", self)
 
     def end_of_elaboration_phase(self) -> None:
@@ -253,3 +260,19 @@ class Test(pyuvm.uvm_test):
         self.raise_objection()
         await self.test_all.start()
         self.drop_objection()
+
+
+def test_back_adder_uvm() -> None:
+    """Verifies the adder with back pressure, using pyuvm."""
+    widths = (16,)
+    for width in widths:
+        runner.run(
+            hdl_toplevel="back_adder",
+            test_module="tests.test_back_adder_uvm",
+            work=f"back_adder_uvm_width_{width}",
+            parameters={"WIDTH": width})
+
+
+if __name__ == "__main__":
+    test_back_adder_uvm()
+    pass

@@ -79,7 +79,7 @@ def clean(c: invoke.Context) -> None:
 def simple_tests(c: invoke.Context) -> None:
     """Runs a simple test intended for tutorial purposes.
     See the cocotb presentation and the test itself for more information."""
-    run_simulation(c, "simple_tests", "simple_adder")
+    run_simulation(c, "test_simple", "simple_adder")
 
 
 @invoke.task
@@ -89,7 +89,7 @@ def adder_tests(c: invoke.Context) -> None:
     for width in widths:
         run_simulation(
             c=c,
-            module_name="adder_tests",
+            module_name="test_adder",
             top_level="simple_adder",
             work_dir=f"adder_tests_width_{width}",
             sim_args=f"-gWIDTH={width}")
@@ -102,7 +102,7 @@ def back_adder_tests(c: invoke.Context) -> None:
     for width in widths:
         run_simulation(
             c=c,
-            module_name="back_adder_tests",
+            module_name="test_back_adder",
             top_level="back_adder",
             work_dir=f"back_adder_tests_width_{width}",
             sim_args=f"-gWIDTH={width}")
@@ -115,7 +115,7 @@ def back_adder_uvm(c: invoke.Context) -> None:
     for width in widths:
         run_simulation(
             c=c,
-            module_name="back_adder_uvm",
+            module_name="test_back_adder_uvm",
             top_level="back_adder",
             work_dir=f"back_adder_uvm_width_{width}",
             sim_args=f"-gWIDTH={width}")
@@ -133,7 +133,7 @@ def fifo_tests(c: invoke.Context) -> None:
             continue
         run_simulation(
             c=c,
-            module_name="fifo_tests",
+            module_name="test_fifo",
             top_level=top_level,
             work_dir=f"{top_level}_tests_width_{width}_depth_{depth}_afdepth_{af_depth}",
             sim_args=f"-gWIDTH={width} -gDEPTH={depth} -gALMOST_FULL_DEPTH={af_depth}")
@@ -143,21 +143,21 @@ def fifo_tests(c: invoke.Context) -> None:
 def delta_example(c: invoke.Context) -> None:
     """The only purpose of this test is to demonstrate how simulator works.
     See the cocotb presentation and the test itself for more information."""
-    run_simulation(c, "delta_example", "delta_example")
+    run_simulation(c, "test_delta_example", "delta_example")
 
 
 @invoke.task
 def delta_cocotb_example(c: invoke.Context) -> None:
     """The only purpose of this test is to demonstrate how simulator works with cocotb.
     See the cocotb presentation and the test itself for more information."""
-    run_simulation(c, "delta_cocotb_example", "delta_cocotb_example")
+    run_simulation(c, "test_delta_example", "delta_cocotb_example")
 
 
 @invoke.task
 def simulation_handle_example(c: invoke.Context) -> None:
     """Demonstrates how cocotb's simulation handles work.
     See the cocotb presentation and the test itself for more information."""
-    run_simulation(c, "simulation_handle_example", "simulation_handle_example")
+    run_simulation(c, "test_simulation_handle_example", "simulation_handle_example")
 
 
 @invoke.task(

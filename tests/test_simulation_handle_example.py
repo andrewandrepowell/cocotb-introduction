@@ -3,6 +3,7 @@ import cocotb.triggers as triggers
 import cocotb.binary as binary
 import cocotb.types as types
 import cocotb.handle as handle
+import cocotb_introduction.runner as runner
 
 
 @cocotb.test()
@@ -101,8 +102,12 @@ async def simulation_handle_example(top):
     cocotb.log.info(f"top.d.value={top.f.value.decode()}")
 
 
+def test_simulation_handle_example() -> None:
+    """Demonstrates how cocotb's simulation handles work.
+    See the cocotb presentation and the test itself for more information."""
+    runner.run(hdl_toplevel="simulation_handle_example", test_module="tests.test_simulation_handle_example", work=f"simulation_handle_example")
 
 
-
-
-
+if __name__ == "__main__":
+    test_simulation_handle_example()
+    pass
