@@ -150,7 +150,7 @@ def delta_example(c: invoke.Context) -> None:
 def delta_cocotb_example(c: invoke.Context) -> None:
     """The only purpose of this test is to demonstrate how simulator works with cocotb.
     See the cocotb presentation and the test itself for more information."""
-    run_simulation(c, "test_delta_example", "delta_cocotb_example")
+    run_simulation(c, "test_delta_cocotb_example", "delta_cocotb_example")
 
 
 @invoke.task
