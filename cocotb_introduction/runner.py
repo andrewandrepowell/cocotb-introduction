@@ -13,7 +13,7 @@ def run(hdl_toplevel: str, test_module: str, work: str, parameters: typing.Mappi
 
     # Unfortunately, it doesn't seem to be possible to log and print to standard out at the same time.
     # For now, the following environmental variable will be used to switch logging on/off.
-    log_enable = os.environ.get("LOG_ENABLE", None) in ("1", "true", "True", "TRUE")
+    log_enable = os.environ.get("LOG_ENABLE", config.CONFIG.get("log_enable", None)) in ("1", "true", "True", "TRUE", True)
 
     # Prepare working directory.
     work_path = pathlib.Path(work + ".work")

@@ -13,6 +13,7 @@ class RunnerDict(typing.TypedDict):
 class ConfigDict(typing.TypedDict):
     """Represents the configurations for the repo stored as a yaml."""
     runner: RunnerDict
+    log_enable: bool
 
 
 CONFIG_PATH = pathlib.Path(__file__).resolve().parent.parent / "config.yaml"
